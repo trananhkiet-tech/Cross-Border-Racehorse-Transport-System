@@ -12,6 +12,7 @@ backend/target/
 backend/uploads/
 backend/logs/
 *.log
+backend/log.txt
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar

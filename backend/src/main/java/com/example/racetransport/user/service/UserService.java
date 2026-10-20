@@ -7,8 +7,6 @@ import com.example.racetransport.common.exception.NotFoundException;
 import com.example.racetransport.common.util.Countries;
 import com.example.racetransport.common.util.Guard;
 import com.example.racetransport.security.UserPrincipal;
-import com.example.racetransport.trip.entity.TripStatus;
-import com.example.racetransport.trip.repository.TripStaffAssignmentRepository;
 import com.example.racetransport.user.dto.UserDtos.ChangePasswordRequest;
 import com.example.racetransport.user.dto.UserDtos.CreateEmployeeRequest;
 import com.example.racetransport.user.dto.UserDtos.CustomerProfileResponse;
@@ -26,7 +24,6 @@ import com.example.racetransport.user.repository.AppUserRepository;
 import com.example.racetransport.user.repository.CustomerProfileRepository;
 import com.example.racetransport.user.repository.EmployeeProfileRepository;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,23 +37,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
 
-    /** Trạng thái chuyến được coi là "đang được giao" khi đếm phân công. */
-    public static final EnumSet<TripStatus> ACTIVE_TRIP_STATUSES = EnumSet.complementOf(
-            EnumSet.of(TripStatus.DELIVERED, TripStatus.CANCELLED));
-
     private final AppUserRepository users;
     private final CustomerProfileRepository customers;
     private final EmployeeProfileRepository employees;
-    private final TripStaffAssignmentRepository assignments;
     private final PasswordEncoder passwordEncoder;
 
     public UserService(AppUserRepository users, CustomerProfileRepository customers,
-                       EmployeeProfileRepository employees, TripStaffAssignmentRepository assignments,
+                       EmployeeProfileRepository employees,
                        PasswordEncoder passwordEncoder) {
         this.users = users;
         this.customers = customers;
         this.employees = employees;
-        this.assignments = assignments;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -207,8 +198,8 @@ public class UserService {
     }
 
     private EmployeeResponse toEmployeeResponse(AppUser u, EmployeeProfile p) {
-        long active = u.getRole() == Role.DRIVER_ESCORT
-                ? assignments.countByStaffIdAndTripStatusIn(u.getId(), ACTIVE_TRIP_STATUSES) : 0;
+        // Số chuyến đang phụ trách do module Trip (user3) bổ sung khi merge; bản main chưa phụ thuộc module Trip.
+        long active = 0;
         return new EmployeeResponse(u.getId(), u.getEmail(), u.getFullName(), u.getPhone(), u.getRole(),
                 Boolean.TRUE.equals(u.getEnabled()),
                 p == null ? null : p.getEmployeeCode(), p == null ? null : p.getDepartment(),
