@@ -1,4 +1,5 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { FILE_ERROR_EVENT } from '../api/client';
 import { Icon } from '../components/Icon';
 
 type ToastTone = 'success' | 'error' | 'warning' | 'info';
@@ -32,6 +33,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     },
     [remove],
   );
+
+  // Lỗi xem/tải tệp phát từ api/client.openFile (không nằm trong cây React).
+  useEffect(() => {
+    const onErr = (e: Event) => show('error', 'Không mở được tệp', String((e as CustomEvent).detail ?? ''));
+    window.addEventListener(FILE_ERROR_EVENT, onErr);
+    return () => window.removeEventListener(FILE_ERROR_EVENT, onErr);
+  }, [show]);
 
   const api = useMemo<ToastApi>(
     () => ({

@@ -71,3 +71,7 @@ cd frontend && npm test && npm run build
 
 ## 10. Trạng thái kiểm chứng (trung thực)
 Frontend đã build và chạy 48 test thật. Backend **chưa** được `mvn test`/khởi động trên SQL Server thật trong môi trường tạo mã (không có Maven); xem `docs/TEST_PLAN.md`. Hãy chạy §3 và §6 trên máy của bạn và báo lỗi nếu có.
+
+
+## Làm việc nhóm trên Git
+`main` chỉ gồm **đăng nhập / đăng ký + khung dùng chung** (các tệp module nghiệp vụ để rỗng); 5 nhánh `user1`…`user5` chứa code của từng thành viên. Chi tiết, thứ tự merge và cách tránh xung đột: [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md).

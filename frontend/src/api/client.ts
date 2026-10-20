@@ -111,19 +111,44 @@ export function qs(params: Record<string, unknown>): string {
   return s ? `?${s}` : '';
 }
 
-/** Tải tệp có xác thực (Bearer) rồi mở trong tab mới hoặc lưu về máy. */
-export async function openFile(path: string, fileName?: string, download = false): Promise<void> {
-  const res = await http.get(path, { responseType: 'blob', params: { inline: !download } });
-  const url = URL.createObjectURL(res.data as Blob);
-  if (download) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName ?? 'tai-lieu';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  } else {
-    window.open(url, '_blank', 'noopener');
+/** Sự kiện báo lỗi xem/tải tệp (ToastProvider lắng nghe và hiển thị). */
+export const FILE_ERROR_EVENT = 'irtms:file-error';
+
+/** Lỗi trả về dạng blob (responseType=blob) → đọc lại JSON để lấy thông điệp tiếng Việt. */
+async function blobErrorMessage(err: unknown): Promise<string> {
+  if (axios.isAxiosError(err) && err.response?.data instanceof Blob) {
+    try {
+      const body = JSON.parse(await err.response.data.text()) as ApiErrorBody;
+      if (body?.message) return body.message;
+    } catch { /* bỏ qua, dùng thông điệp mặc định */ }
   }
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  return errorMessage(err);
+}
+
+/** Tải tệp có xác thực (Bearer) rồi mở trong tab mới hoặc lưu về máy. Lỗi được hiển thị bằng thông báo. */
+export async function openFile(path: string, fileName?: string, download = false): Promise<void> {
+  // Mở tab ngay trong sự kiện click để trình duyệt không chặn popup (blob chỉ có sau khi gọi API).
+  const win = download ? null : window.open('', '_blank');
+  try {
+    const res = await http.get(path, { responseType: 'blob', params: { inline: !download } });
+    const url = URL.createObjectURL(res.data as Blob);
+    if (download) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName ?? 'tai-lieu';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else if (win) {
+      win.opener = null;
+      win.location.href = url;
+    } else {
+      window.location.assign(url);
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (err) {
+    win?.close();
+    const message = await blobErrorMessage(err);
+    window.dispatchEvent(new CustomEvent(FILE_ERROR_EVENT, { detail: message }));
+  }
 }
