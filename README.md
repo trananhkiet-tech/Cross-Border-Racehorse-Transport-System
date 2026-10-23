@@ -70,4 +70,4 @@ cd frontend && npm test && npm run build
 `docs/ARCHITECTURE.md`, `API_CONTRACT.md`, `DATABASE.md`, `BUSINESS_WORKFLOWS.md`, `ASSUMPTIONS.md`, `TEST_PLAN.md`, `TEAM_MODULES.md`.
 
 ## 10. Trạng thái kiểm chứng (trung thực)
-Frontend đã build và chạy 48 test thật. Backend **chưa** được `mvn test`/khởi động trên SQL Server thật trong môi trường tạo mã (không có Maven); xem `docs/TEST_PLAN.md`. Hãy chạy §3 và §6 trên máy của bạn và báo lỗi nếu có.
+Frontend đã build và chạy 48 test thật. Backend **chưa** được `mvn test`/khởi động trên SQL Server thật trong môi trường tạo mã (không có Maven); xem `docs/TEST_PLAN.md`.
